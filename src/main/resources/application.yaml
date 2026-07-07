@@ -1,3 +1,6 @@
 spring:
   application:
     name: last-message
+
+  profiles:
+    active: dev

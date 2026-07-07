@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: last-message
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/last_message
+    username: lastmessage
+    password: 12341234
+
+  sql:
+    init:
+      mode: always
