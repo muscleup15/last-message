@@ -6,7 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface MessageRepository  extends ReactiveCrudRepository<Message, Long> {
-    Flux<Message> findByReceiverPhone(String receiverPhone);
-    
+
+    Flux<Message> findByReceiverPhoneOrderByCreatedAtDesc(String receiverPhone);
 
 }
