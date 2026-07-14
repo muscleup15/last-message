@@ -17,17 +17,17 @@ import java.time.LocalDateTime;
 public class Message {
 
     @Id
-    Long id;
+    private Long id;
 
-    String senderPhone;
+    private String senderPhone;
 
-    String receiverPhone;
+    private String receiverPhone;
 
-    String content;
+    private String content;
 
-    MessageStatus status;
+    private MessageStatus status;
 
-    LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
-    LocalDateTime openedAt;
+    private LocalDateTime openedAt;
 }
