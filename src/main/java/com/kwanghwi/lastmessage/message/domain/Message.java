@@ -30,4 +30,22 @@ public class Message {
     private LocalDateTime createdAt;
 
     private LocalDateTime openedAt;
+
+    public static Message create(String senderPhone, String receiverPhone, String content){
+        return  Message.builder()
+                .senderPhone(senderPhone)
+                .receiverPhone(receiverPhone)
+                .content(content)
+                .status(MessageStatus.CREATED)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+    }
+
+    public void open(){
+        this.status = MessageStatus.OPENED;
+        this.openedAt = LocalDateTime.now();
+    }
+
+
 }

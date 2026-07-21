@@ -22,13 +22,12 @@ public class MessageService {
     }
 
     public Mono<CreateMessageResponse> createMessage(CreateMessageRequest request){
-        Message message = Message.builder()
-                .senderPhone(request.getSenderPhone())
-                .receiverPhone(request.getReceiverPhone())
-                .content((request.getContent()))
-                .status(MessageStatus.CREATED)
-                .createdAt(LocalDateTime.now())
-                .build();
+        Message message = Message.create(
+                request.getSenderPhone(),
+                request.getReceiverPhone(),
+                request.getContent()
+        );
+
         return messageRepository.save(message)
                 .map(savedMessage -> new CreateMessageResponse(
                         savedMessage.getId(),
@@ -44,6 +43,20 @@ public class MessageService {
                         receivedMessage.getContent(),
                         receivedMessage.getCreatedAt(),
                         receivedMessage.getStatus()
+                ));
+    }
+
+    public Mono<GetMessageResponse> openMessage(Long messageId){
+        return messageRepository.findById(messageId)
+                .flatMap(message -> {
+                    message.open();;
+                    return messageRepository.save(message);
+                })
+                .map(savedMessage -> new GetMessageResponse(
+                        savedMessage.getId(),
+                        savedMessage.getContent(),
+                        savedMessage.getCreatedAt(),
+                        savedMessage.getStatus()
                 ));
     }
 
