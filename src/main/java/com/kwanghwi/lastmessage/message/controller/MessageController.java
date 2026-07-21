@@ -28,4 +28,9 @@ public class MessageController {
         return messageService.getMessageByReceiverPhone(receiverPhone);
     }
 
+    @PatchMapping("/{messageId}/open")
+    public Mono<GetMessageResponse> openMessage(@PathVariable Long messageId){
+        return messageService.openMessage(messageId);
+    }
+
 }
