@@ -4,8 +4,10 @@ import com.kwanghwi.lastmessage.message.domain.Message;
 import com.kwanghwi.lastmessage.message.domain.MessageStatus;
 import com.kwanghwi.lastmessage.message.dto.CreateMessageRequest;
 import com.kwanghwi.lastmessage.message.dto.CreateMessageResponse;
+import com.kwanghwi.lastmessage.message.dto.GetMessageResponse;
 import com.kwanghwi.lastmessage.message.repository.MessageRepository;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -32,6 +34,16 @@ public class MessageService {
                         savedMessage.getId(),
                         savedMessage.getContent(),
                         savedMessage.getCreatedAt()
+                ));
+    }
+
+    public Flux<GetMessageResponse> getMessageByReceiverPhone(String receiverPhone){
+        return messageRepository.findByReceiverPhoneOrderByCreatedAtDesc(receiverPhone)
+                .map(receivedMessage -> new GetMessageResponse(
+                        receivedMessage.getId(),
+                        receivedMessage.getContent(),
+                        receivedMessage.getCreatedAt(),
+                        receivedMessage.getStatus()
                 ));
     }
 
