@@ -6,7 +6,9 @@ import com.kwanghwi.lastmessage.message.dto.CreateMessageRequest;
 import com.kwanghwi.lastmessage.message.dto.CreateMessageResponse;
 import com.kwanghwi.lastmessage.message.dto.GetMessageResponse;
 import com.kwanghwi.lastmessage.message.repository.MessageRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -48,6 +50,12 @@ public class MessageService {
 
     public Mono<GetMessageResponse> openMessage(Long messageId){
         return messageRepository.findById(messageId)
+                .switchIfEmpty(
+                   Mono.error(new ResponseStatusException(
+                           HttpStatus.NOT_FOUND,
+                           "Message not found"
+                   ))
+                )
                 .flatMap(message -> {
                     message.open();;
                     return messageRepository.save(message);
