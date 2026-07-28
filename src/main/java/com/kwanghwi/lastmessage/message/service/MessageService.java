@@ -1,5 +1,6 @@
 package com.kwanghwi.lastmessage.message.service;
 
+import com.kwanghwi.lastmessage.common.exception.MessageNotFoundException;
 import com.kwanghwi.lastmessage.message.domain.Message;
 import com.kwanghwi.lastmessage.message.domain.MessageStatus;
 import com.kwanghwi.lastmessage.message.dto.CreateMessageRequest;
@@ -51,10 +52,7 @@ public class MessageService {
     public Mono<GetMessageResponse> openMessage(Long messageId){
         return messageRepository.findById(messageId)
                 .switchIfEmpty(
-                   Mono.error(new ResponseStatusException(
-                           HttpStatus.NOT_FOUND,
-                           "Message not found"
-                   ))
+                   Mono.error(new MessageNotFoundException(messageId))
                 )
                 .flatMap(message -> {
                     message.open();;
