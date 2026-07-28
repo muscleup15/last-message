@@ -6,6 +6,7 @@ import com.kwanghwi.lastmessage.message.dto.CreateMessageRequest;
 import com.kwanghwi.lastmessage.message.dto.CreateMessageResponse;
 import com.kwanghwi.lastmessage.message.dto.GetMessageResponse;
 import com.kwanghwi.lastmessage.message.service.MessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -19,7 +20,7 @@ public class MessageController {
     private final MessageService messageService;
 
     @PostMapping
-    public Mono<CreateMessageResponse> createMessage(@RequestBody CreateMessageRequest request){
+    public Mono<CreateMessageResponse> createMessage(@Valid @RequestBody CreateMessageRequest request){
         return messageService.createMessage(request);
     }
 
