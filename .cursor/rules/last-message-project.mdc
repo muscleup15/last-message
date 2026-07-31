@@ -1,0 +1,63 @@
+---
+description: Last Message monorepo conventions — stack, structure, API, and workflow
+alwaysApply: true
+---
+
+# Last Message Project Rules
+
+## Project Overview
+
+Monorepo:
+
+- `/backend` — Spring Boot 4 + WebFlux + R2DBC (implemented; source of truth)
+- `/frontend` — React + TypeScript + Vite
+
+Do **not** modify backend code unless explicitly requested.
+
+## Frontend Stack
+
+- React, TypeScript, Vite
+- Tailwind CSS, React Router, Axios
+
+## Architecture
+
+Prefer:
+
+```
+src/
+  api/
+  components/
+  hooks/
+  layouts/
+  pages/
+  router/
+  types/
+  utils/
+```
+
+Use reusable components whenever possible.
+
+## Coding Style
+
+- Functional components only
+- Prefer composition over duplication; keep components small
+- Avoid unnecessary libraries
+- Use async/await
+- Keep TypeScript types explicit
+
+## Backend Integration
+
+Never invent APIs. Only use existing endpoints:
+
+- `POST /messages`
+- `GET /messages?receiverPhone=`
+- `PATCH /messages/{messageId}/open`
+
+If an API is missing, ask before implementing.
+
+## Workflow
+
+- Explain the implementation plan before generating code
+- Implement one feature at a time
+- Do not generate large amounts of unnecessary code
+- Preserve the existing project structure
