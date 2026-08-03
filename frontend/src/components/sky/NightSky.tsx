@@ -9,7 +9,7 @@ type NightSkyProps = {
 export function NightSky({ children, className = '' }: NightSkyProps) {
   return (
     <div
-      className={`relative min-h-svh overflow-hidden ${className}`}
+      className={`relative flex min-h-full flex-1 flex-col overflow-hidden ${className}`}
       style={{
         backgroundColor: 'var(--bg-deep)',
         backgroundImage:
@@ -18,7 +18,7 @@ export function NightSky({ children, className = '' }: NightSkyProps) {
       }}
     >
       <StarField />
-      <div className="relative z-10">{children}</div>
+      {children}
     </div>
   )
 }

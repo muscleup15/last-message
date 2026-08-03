@@ -7,17 +7,12 @@ type AppShellProps = {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <NightSky>
-      <div
-        className="mx-auto flex min-h-svh w-full flex-col"
-        style={{
-          maxWidth: 'var(--content-max)',
-          paddingInline: 'var(--space-page)',
-          paddingBlock: 'var(--space-page)',
-        }}
-      >
-        {children}
+    <div className="app-shell">
+      <div className="app-stage">
+        <NightSky>
+          <div className="app-content">{children}</div>
+        </NightSky>
       </div>
-    </NightSky>
+    </div>
   )
 }
