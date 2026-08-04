@@ -243,6 +243,67 @@ body {
   }
 }
 
+/*
+  Shooting stars: upper-right → lower-left (45–60° from horizontal).
+  Head leads; trail (잔상) shrinks away first via scaleX + origin at head.
+*/
+.shooting-star {
+  height: 1.5px;
+  border-radius: 999px;
+  /* local +x → head (bright); trail fades toward 0% */
+  background: linear-gradient(
+    90deg,
+    rgba(232, 228, 217, 0) 0%,
+    rgba(232, 228, 217, 0.2) 35%,
+    rgba(232, 228, 217, 0.75) 78%,
+    rgba(232, 228, 217, 1) 100%
+  );
+  box-shadow: 0 0 6px rgba(232, 228, 217, 0.25);
+  transform-origin: right center;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-name: shooting-star-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes shooting-star-fall {
+  /* Quiet wait at start of each cycle */
+  0%,
+  12% {
+    opacity: 0;
+    transform: rotate(var(--meteor-angle, 128deg)) translateX(0) scaleX(0.2);
+  }
+  /* Appear — streak forms, head already leading down-left */
+  16% {
+    opacity: 1;
+    transform: rotate(var(--meteor-angle, 128deg)) translateX(3vmin) scaleX(1);
+  }
+  /* Cruise across the sky */
+  42% {
+    opacity: 1;
+    transform: rotate(var(--meteor-angle, 128deg)) translateX(36vmin) scaleX(1);
+  }
+  /* Trail (잔상) collapses toward the head first */
+  58% {
+    opacity: 0.7;
+    transform: rotate(var(--meteor-angle, 128deg)) translateX(48vmin) scaleX(0.35);
+  }
+  /* Head fades last */
+  68%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--meteor-angle, 128deg)) translateX(54vmin) scaleX(0.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shooting-star {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .app-stage *,
   .app-stage *::before,

@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 import { BrandTitle } from '../brand/BrandTitle'
 import { ArrivalReveal } from '../motion/ArrivalReveal'
 import { SendDeparture } from '../motion/SendDeparture'
-import { EarthScene } from './EarthScene'
-import { MessageStar } from './MessageStar'
+import { HomeBackdrop } from './HomeBackdrop'
+import { ShootingStars } from './ShootingStars'
 
 export type HomeMood = 'idle' | 'sending' | 'receiving'
 
@@ -21,40 +21,51 @@ export function HomeStage({
   actions,
 }: HomeStageProps) {
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col items-center">
-      <div className="relative z-10 flex w-full max-w-[18rem] flex-1 flex-col items-center justify-center text-center">
-        <MessageStar visible={mood === 'idle'} />
+    <div
+      className="relative flex min-h-0 flex-1 flex-col"
+      style={{
+        marginInline: 'calc(var(--space-page) * -1)',
+        marginBlock: 'calc(var(--space-page) * -1)',
+        width: 'calc(100% + (var(--space-page) * 2))',
+        minHeight: 'calc(100% + (var(--space-page) * 2))',
+      }}
+    >
+      <HomeBackdrop />
+      <ShootingStars />
 
-        <div className="mt-5">
+      <div
+        className="relative z-10 flex flex-1 flex-col items-center px-[var(--space-page)]"
+        style={{ paddingTop: 'max(1.75rem, 7svh)' }}
+      >
+        {/* Sky band: brand + CTAs stay in upper ~55% */}
+        <div className="flex w-full max-w-[18rem] flex-col items-center text-center">
           <BrandTitle />
+          <p
+            className="mt-3 text-[var(--text-muted)]"
+            style={{
+              maxWidth: '12.5rem',
+              fontSize: 'var(--font-size-caption)',
+              lineHeight: 1.7,
+              animation: 'brand-rise var(--duration-enter) var(--ease-out-soft) 220ms both',
+            }}
+          >
+            시간이 지나도
+            <br />
+            닿는 마음
+          </p>
+
+          <div
+            className="mt-8 flex w-full flex-col gap-3"
+            style={{
+              animation: 'brand-rise var(--duration-enter) var(--ease-out-soft) 320ms both',
+            }}
+          >
+            {actions}
+          </div>
         </div>
 
-        <p
-          className="mt-4 text-[var(--text-muted)]"
-          style={{
-            maxWidth: '12.5rem',
-            fontSize: 'var(--font-size-caption)',
-            lineHeight: 1.7,
-            animation: 'brand-rise var(--duration-enter) var(--ease-out-soft) 220ms both',
-          }}
-        >
-          시간이 지나도
-          <br />
-          닿는 마음
-        </p>
-
-        <div className="mt-8 w-full">
-          <EarthScene />
-        </div>
-
-        <div
-          className="mt-8 flex w-full flex-col gap-3"
-          style={{
-            animation: 'brand-rise var(--duration-enter) var(--ease-out-soft) 320ms both',
-          }}
-        >
-          {actions}
-        </div>
+        {/* Leaves lower third for the star + astronaut in the artwork */}
+        <div className="min-h-[min(34svh,12rem)] flex-1" aria-hidden />
       </div>
 
       {mood === 'sending' ? (
