@@ -6,6 +6,11 @@ spring:
     username: lastmessage
     password: 12341234
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   sql:
     init:
       mode: always
