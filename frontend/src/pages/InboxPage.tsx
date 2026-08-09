@@ -111,15 +111,6 @@ export function InboxPage() {
           >
             별 받기
           </h1>
-          <p
-            className="mt-2 m-0 text-[var(--text-muted)]"
-            style={{
-              fontSize: 'var(--font-size-caption)',
-              lineHeight: 'var(--line-height-body)',
-            }}
-          >
-            내 번호로 도착한 메시지를 열어보세요.
-          </p>
         </header>
 
         {error ? <InlineError message={error} /> : null}

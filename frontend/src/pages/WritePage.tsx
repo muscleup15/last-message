@@ -10,7 +10,7 @@ import { TextField } from '../components/ui/TextField'
 import { hasAccessToken } from '../utils/authToken'
 import { digitsOnly, isPhone11 } from '../utils/phone'
 
-const CONTENT_MAX = 500
+const CONTENT_MAX = 1000
 
 type WritePhase = 'form' | 'submitting' | 'sent'
 
@@ -136,7 +136,6 @@ export function WritePage() {
                 setReceiverPhone(digitsOnly(event.target.value, 11))
                 setError(null)
               }}
-              hint="숫자 11자리"
             />
 
             <TextArea
