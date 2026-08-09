@@ -16,4 +16,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+
+    @ExceptionHandler(InvalidOtpException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOtp(InvalidOtpException e) {
+        ErrorResponse response = new ErrorResponse(
+                "INVALID_OTP",
+                e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
 }
