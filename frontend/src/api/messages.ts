@@ -17,13 +17,9 @@ export async function createMessage(
   }
 }
 
-export async function getMessagesByReceiverPhone(
-  receiverPhone: string,
-): Promise<MessageItem[]> {
+export async function getMyMessages(): Promise<MessageItem[]> {
   try {
-    const { data } = await apiClient.get<MessageItem[]>('/messages', {
-      params: { receiverPhone },
-    })
+    const { data } = await apiClient.get<MessageItem[]>('/messages')
     return data
   } catch (error) {
     throw toApiError(error)

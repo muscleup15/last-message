@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter implements WebFilter {
     }
 
     private boolean isPublic(String path) {
-        return PUBLIC_PATHS.contains(path) || path.startsWith("/messages");
+        return PUBLIC_PATHS.contains(path);
     }
 
     private String extractBearerToken(ServerHttpRequest request) {

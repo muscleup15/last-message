@@ -10,7 +10,6 @@ export type MessageItem = {
 
 /** POST /messages request */
 export type CreateMessageRequest = {
-  senderPhone: string
   receiverPhone: string
   content: string
 }

@@ -35,4 +35,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
+
+    @ExceptionHandler(NoRemainingMessageException.class)
+    public ResponseEntity<ErrorResponse> handleNoRemainingMessage(NoRemainingMessageException e) {
+        ErrorResponse response = new ErrorResponse(
+                "NO_REMAINING_MESSAGE",
+                e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }

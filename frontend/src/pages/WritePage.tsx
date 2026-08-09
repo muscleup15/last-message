@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button'
 import { Sheet } from '../components/ui/Sheet'
 import { TextArea } from '../components/ui/TextArea'
 import { TextField } from '../components/ui/TextField'
+import { hasAccessToken } from '../utils/authToken'
 import { digitsOnly, isPhone11 } from '../utils/phone'
 
 const CONTENT_MAX = 500
@@ -16,7 +17,6 @@ type WritePhase = 'form' | 'submitting' | 'sent'
 export function WritePage() {
   const navigate = useNavigate()
   const [receiverPhone, setReceiverPhone] = useState('')
-  const [senderPhone, setSenderPhone] = useState('')
   const [content, setContent] = useState('')
   const [phase, setPhase] = useState<WritePhase>('form')
   const [error, setError] = useState<string | null>(null)
@@ -31,8 +31,13 @@ export function WritePage() {
     event.preventDefault()
     if (phase !== 'form') return
 
-    if (!isPhone11(receiverPhone) || !isPhone11(senderPhone)) {
-      setError('전화번호는 숫자 11자리여야 합니다.')
+    if (!hasAccessToken()) {
+      setError('전화번호 인증 후 이용할 수 있습니다.')
+      return
+    }
+
+    if (!isPhone11(receiverPhone)) {
+      setError('받는 사람 전화번호는 숫자 11자리여야 합니다.')
       return
     }
 
@@ -47,7 +52,6 @@ export function WritePage() {
 
     try {
       await createMessage({
-        senderPhone,
         receiverPhone,
         content: trimmed,
       })
@@ -130,21 +134,6 @@ export function WritePage() {
               value={receiverPhone}
               onChange={(event) => {
                 setReceiverPhone(digitsOnly(event.target.value, 11))
-                setError(null)
-              }}
-              hint="숫자 11자리"
-            />
-
-            <TextField
-              name="senderPhone"
-              label="보내는 사람 전화번호"
-              placeholder="01012345678"
-              inputMode="numeric"
-              autoComplete="tel-national"
-              maxLength={11}
-              value={senderPhone}
-              onChange={(event) => {
-                setSenderPhone(digitsOnly(event.target.value, 11))
                 setError(null)
               }}
               hint="숫자 11자리"
