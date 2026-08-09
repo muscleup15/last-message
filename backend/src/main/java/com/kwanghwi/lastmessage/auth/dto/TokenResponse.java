@@ -5,8 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class VerifyOtpResponse {
+public class TokenResponse {
 
-    private final boolean verified;
-    private final String phone;
+    private final String accessToken;
 }

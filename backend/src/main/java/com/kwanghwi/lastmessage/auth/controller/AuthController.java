@@ -1,8 +1,8 @@
 package com.kwanghwi.lastmessage.auth.controller;
 
 import com.kwanghwi.lastmessage.auth.dto.SendOtpRequest;
+import com.kwanghwi.lastmessage.auth.dto.TokenResponse;
 import com.kwanghwi.lastmessage.auth.dto.VerifyOtpRequest;
-import com.kwanghwi.lastmessage.auth.dto.VerifyOtpResponse;
 import com.kwanghwi.lastmessage.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/otp/verify")
-    public Mono<VerifyOtpResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+    public Mono<TokenResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
         return authService.verifyOtp(request.getPhone(), request.getCode());
     }
 }
