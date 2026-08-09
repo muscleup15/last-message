@@ -26,6 +26,13 @@ export function toApiError(error: unknown): ApiError {
       return new ApiError(data.message, { status, code: data.code })
     }
 
+    if (status === 401) {
+      return new ApiError(data?.message ?? '인증에 실패했습니다.', {
+        status,
+        code: data?.code,
+      })
+    }
+
     if (status === 400) {
       return new ApiError('입력값을 다시 확인해 주세요.', { status })
     }
