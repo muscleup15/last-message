@@ -19,3 +19,5 @@ app:
   jwt:
     secret: last-message-dev-jwt-secret-key-32b
     expiration-ms: 86400000
+  cors:
+    allowed-origins: http://localhost:5173
