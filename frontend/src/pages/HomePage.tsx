@@ -113,7 +113,6 @@ export function HomePage() {
                 setPhone(digitsOnly(event.target.value, 11))
                 setError(null)
               }}
-              hint="숫자 11자리"
             />
             {!codeVisible ? (
               <Button type="submit" variant="primary" disabled={busy}>
