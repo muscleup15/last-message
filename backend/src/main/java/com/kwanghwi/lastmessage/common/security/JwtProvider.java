@@ -24,24 +24,25 @@ public class JwtProvider {
         this.expirationMs = expirationMs;
     }
 
-    public String createToken(String phone) {
+    public String createToken(Long userId) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
 
         return Jwts.builder()
-                .setSubject(phone)
+                .setSubject(String.valueOf(userId))
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String getPhone(String token) {
-        return Jwts.parserBuilder()
+    public Long getUserId(String token) {
+        String subject = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+        return Long.valueOf(subject);
     }
 }

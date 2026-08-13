@@ -1,57 +1,60 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { sendOtp, verifyOtp } from '../api/auth'
+import { getKakaoAuthorizeUrl, getMe, registerPhone } from '../api/auth'
 import { toApiError } from '../api/errors'
 import { HomeStage } from '../components/home/HomeStage'
 import { InlineError } from '../components/feedback/InlineError'
 import { Button } from '../components/ui/Button'
 import { TextField } from '../components/ui/TextField'
-import { hasAccessToken, setAccessToken } from '../utils/authToken'
+import { clearAccessToken, hasAccessToken } from '../utils/authToken'
 import { digitsOnly, isPhone11 } from '../utils/phone'
 
-type AuthPhase = 'phone' | 'code' | 'sending' | 'verifying'
-
-const OTP_TTL_MS = 3 * 60 * 1000
-
-function formatCountdown(remainingMs: number): string {
-  const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000))
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-}
+type Screen = 'loading' | 'guest' | 'register' | 'ready'
 
 export function HomePage() {
   const navigate = useNavigate()
-  const [authenticated, setAuthenticated] = useState(() => hasAccessToken())
+  const [screen, setScreen] = useState<Screen>('loading')
   const [phone, setPhone] = useState('')
-  const [code, setCode] = useState('')
-  const [phase, setPhase] = useState<AuthPhase>('phone')
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [expiresAt, setExpiresAt] = useState<number | null>(null)
-  const [remainingMs, setRemainingMs] = useState(0)
-
-  const codeVisible = phase === 'code' || phase === 'verifying'
-  const busy = phase === 'sending' || phase === 'verifying'
-  const expired = codeVisible && expiresAt !== null && remainingMs <= 0
 
   useEffect(() => {
-    if (expiresAt === null) {
-      setRemainingMs(0)
-      return
+    let cancelled = false
+
+    async function resolveSession() {
+      if (!hasAccessToken()) {
+        setScreen('guest')
+        return
+      }
+
+      try {
+        const me = await getMe()
+        if (cancelled) return
+        setScreen(me.phoneRegistered ? 'ready' : 'register')
+      } catch {
+        if (cancelled) return
+        clearAccessToken()
+        setScreen('guest')
+      }
     }
 
-    const tick = () => {
-      setRemainingMs(Math.max(0, expiresAt - Date.now()))
+    void resolveSession()
+    return () => {
+      cancelled = true
     }
+  }, [])
 
-    tick()
-    const id = window.setInterval(tick, 250)
-    return () => window.clearInterval(id)
-  }, [expiresAt])
+  function handleKakaoLogin() {
+    try {
+      window.location.href = getKakaoAuthorizeUrl()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '카카오 로그인에 실패했습니다.')
+    }
+  }
 
-  async function handleSendOtp(event: FormEvent<HTMLFormElement>) {
+  async function handleRegisterPhone(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (busy) return
+    if (submitting) return
 
     if (!isPhone11(phone)) {
       setError('전화번호는 숫자 11자리여야 합니다.')
@@ -59,43 +62,36 @@ export function HomePage() {
     }
 
     setError(null)
-    setPhase('sending')
+    setSubmitting(true)
 
     try {
-      await sendOtp(phone)
-      setCode('')
-      setExpiresAt(Date.now() + OTP_TTL_MS)
-      setPhase('code')
+      const me = await registerPhone(phone)
+      if (me.phoneRegistered) {
+        setScreen('ready')
+      }
     } catch (err) {
       setError(toApiError(err).message)
-      setExpiresAt(null)
-      setPhase('phone')
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  async function handleVerifyOtp(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (busy || expired) return
-
-    if (!/^\d{6}$/.test(code)) {
-      setError('인증번호는 숫자 6자리여야 합니다.')
-      return
-    }
-
-    setError(null)
-    setPhase('verifying')
-
-    try {
-      const accessToken = await verifyOtp(phone, code)
-      setAccessToken(accessToken)
-      setAuthenticated(true)
-    } catch (err) {
-      setError(toApiError(err).message)
-      setPhase('code')
-    }
+  if (screen === 'loading') {
+    return (
+      <HomeStage
+        actions={
+          <p
+            className="m-0 text-center text-[var(--text-muted)]"
+            style={{ fontSize: 'var(--font-size-caption)' }}
+          >
+            잠시만요
+          </p>
+        }
+      />
+    )
   }
 
-  if (authenticated) {
+  if (screen === 'ready') {
     return (
       <HomeStage
         actions={
@@ -112,63 +108,54 @@ export function HomePage() {
     )
   }
 
+  if (screen === 'guest') {
+    return (
+      <HomeStage
+        actions={
+          <div className="flex w-full flex-col gap-4">
+            <Button type="button" variant="primary" onClick={handleKakaoLogin}>
+              카카오로 시작하기
+            </Button>
+            {error ? <InlineError message={error} /> : null}
+          </div>
+        }
+      />
+    )
+  }
+
   return (
     <HomeStage
       actions={
         <div className="flex w-full flex-col gap-6 text-left">
-          <form className="flex flex-col gap-4" onSubmit={handleSendOtp} noValidate>
+          <form className="flex flex-col gap-4" onSubmit={handleRegisterPhone} noValidate>
             <TextField
               name="phone"
-              label="전화번호"
+              label="내 전화번호"
               placeholder="01012345678"
               inputMode="numeric"
               autoComplete="tel-national"
               maxLength={11}
               value={phone}
-              disabled={busy}
+              disabled={submitting}
               onChange={(event) => {
                 setPhone(digitsOnly(event.target.value, 11))
                 setError(null)
               }}
             />
-            {!codeVisible ? (
-              <Button type="submit" variant="primary" disabled={busy}>
-                {phase === 'sending' ? '보내는 중…' : '전화번호 인증하기'}
-              </Button>
-            ) : (
-              <Button type="submit" variant="ghost" disabled={busy}>
-                {phase === 'sending' ? '재발송 중…' : '인증번호 다시 받기'}
-              </Button>
-            )}
+            <p
+              className="m-0 text-[var(--text-muted)]"
+              style={{
+                fontSize: 'var(--font-size-caption)',
+                lineHeight: 1.7,
+              }}
+            >
+              전화번호는 최초 입력 후 변경할 수 없습니다. 메시지 수신에 사용되는 번호이니 신중하게 입력해주세요.
+            </p>
+            {error ? <InlineError message={error} /> : null}
+            <Button type="submit" variant="primary" disabled={submitting}>
+              {submitting ? '등록 중…' : '전화번호 등록하기'}
+            </Button>
           </form>
-
-          {codeVisible ? (
-            <form className="flex flex-col gap-4" onSubmit={handleVerifyOtp} noValidate>
-              <TextField
-                name="code"
-                label="인증번호"
-                placeholder="123456"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                value={code}
-                disabled={busy || expired}
-                onChange={(event) => {
-                  setCode(digitsOnly(event.target.value, 6))
-                  setError(null)
-                }}
-                hint={formatCountdown(remainingMs)}
-              />
-              <Button type="submit" variant="primary" disabled={busy || expired}>
-                {phase === 'verifying' ? '확인 중…' : '인증하기'}
-              </Button>
-            </form>
-          ) : null}
-
-          {error ? <InlineError message={error} /> : null}
-          {expired && !error ? (
-            <InlineError message="인증 시간이 만료되었습니다. 다시 받아 주세요." />
-          ) : null}
         </div>
       }
     />

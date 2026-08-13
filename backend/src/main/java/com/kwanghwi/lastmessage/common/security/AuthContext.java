@@ -4,17 +4,17 @@ import reactor.core.publisher.Mono;
 
 public final class AuthContext {
 
-    public static final String PHONE_KEY = "auth.phone";
+    public static final String USER_ID_KEY = "auth.userId";
 
     private AuthContext() {
     }
 
-    public static Mono<String> currentPhone() {
+    public static Mono<Long> currentUserId() {
         return Mono.deferContextual(ctx -> {
-            if (!ctx.hasKey(PHONE_KEY)) {
+            if (!ctx.hasKey(USER_ID_KEY)) {
                 return Mono.error(new UnauthorizedException("인증이 필요합니다."));
             }
-            return Mono.just(ctx.get(PHONE_KEY));
+            return Mono.just(ctx.get(USER_ID_KEY));
         });
     }
 }

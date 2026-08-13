@@ -5,7 +5,8 @@ import { HomePage } from '../pages/HomePage'
 
 export function WorldLayout() {
   const { pathname } = useLocation()
-  const isSheet = pathname === '/write' || pathname === '/inbox'
+  const isSheet =
+    pathname === '/write' || pathname === '/inbox' || pathname === '/oauth/kakao'
 
   return (
     <div className="relative flex min-h-full flex-1 flex-col overflow-hidden">

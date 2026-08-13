@@ -20,8 +20,7 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     private static final Set<String> PUBLIC_PATHS = Set.of(
             "/hello",
-            "/auth/otp",
-            "/auth/otp/verify"
+            "/auth/kakao"
     );
 
     private final JwtProvider jwtProvider;
@@ -48,9 +47,9 @@ public class JwtAuthenticationFilter implements WebFilter {
         }
 
         try {
-            String phone = jwtProvider.getPhone(token);
+            Long userId = jwtProvider.getUserId(token);
             return chain.filter(exchange)
-                    .contextWrite(Context.of(AuthContext.PHONE_KEY, phone));
+                    .contextWrite(Context.of(AuthContext.USER_ID_KEY, userId));
         } catch (Exception e) {
             return unauthorized(exchange, "유효하지 않은 토큰입니다.");
         }

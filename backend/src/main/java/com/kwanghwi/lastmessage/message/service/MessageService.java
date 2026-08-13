@@ -22,16 +22,16 @@ public class MessageService {
         this.userService = userService;
     }
 
-    public Mono<CreateMessageResponse> createMessage(String senderPhone, CreateMessageRequest request) {
-        return userService.decreaseRemainingCount(senderPhone)
-                .then(Mono.defer(() -> {
+    public Mono<CreateMessageResponse> createMessage(Long senderUserId, CreateMessageRequest request) {
+        return userService.decreaseRemainingCount(senderUserId)
+                .flatMap(sender -> {
                     Message message = Message.create(
-                            senderPhone,
+                            sender.getPhone(),
                             request.getReceiverPhone(),
                             request.getContent()
                     );
                     return messageRepository.save(message);
-                }))
+                })
                 .map(savedMessage -> new CreateMessageResponse(
                         savedMessage.getId(),
                         savedMessage.getContent(),
@@ -39,8 +39,9 @@ public class MessageService {
                 ));
     }
 
-    public Flux<GetMessageResponse> getMyMessages(String receiverPhone) {
-        return messageRepository.findByReceiverPhoneOrderByCreatedAtDesc(receiverPhone)
+    public Flux<GetMessageResponse> getMyMessages(Long receiverUserId) {
+        return userService.requireRegisteredPhone(receiverUserId)
+                .flatMapMany(user -> messageRepository.findByReceiverPhoneOrderByCreatedAtDesc(user.getPhone()))
                 .map(receivedMessage -> new GetMessageResponse(
                         receivedMessage.getId(),
                         receivedMessage.getContent(),
@@ -49,15 +50,16 @@ public class MessageService {
                 ));
     }
 
-    public Mono<GetMessageResponse> openMessage(Long messageId, String receiverPhone) {
-        return messageRepository.findById(messageId)
-                .switchIfEmpty(Mono.error(new MessageNotFoundException(messageId)))
-                .filter(message -> receiverPhone.equals(message.getReceiverPhone()))
-                .switchIfEmpty(Mono.error(new MessageNotFoundException(messageId)))
-                .flatMap(message -> {
-                    message.open();
-                    return messageRepository.save(message);
-                })
+    public Mono<GetMessageResponse> openMessage(Long messageId, Long receiverUserId) {
+        return userService.requireRegisteredPhone(receiverUserId)
+                .flatMap(user -> messageRepository.findById(messageId)
+                        .switchIfEmpty(Mono.error(new MessageNotFoundException(messageId)))
+                        .filter(message -> user.getPhone().equals(message.getReceiverPhone()))
+                        .switchIfEmpty(Mono.error(new MessageNotFoundException(messageId)))
+                        .flatMap(message -> {
+                            message.open();
+                            return messageRepository.save(message);
+                        }))
                 .map(savedMessage -> new GetMessageResponse(
                         savedMessage.getId(),
                         savedMessage.getContent(),

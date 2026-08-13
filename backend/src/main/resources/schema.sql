@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS messages (
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    phone VARCHAR(11) NOT NULL UNIQUE,
+    kakao_id BIGINT NOT NULL UNIQUE,
+    phone VARCHAR(11) UNIQUE,
     remaining_message_count INTEGER NOT NULL
 );

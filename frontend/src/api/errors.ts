@@ -33,6 +33,10 @@ export function toApiError(error: unknown): ApiError {
       })
     }
 
+    if (status === 403) {
+      return new ApiError(data?.message ?? '권한이 없습니다.', { status, code: data?.code })
+    }
+
     if (status === 400) {
       return new ApiError('입력값을 다시 확인해 주세요.', { status })
     }

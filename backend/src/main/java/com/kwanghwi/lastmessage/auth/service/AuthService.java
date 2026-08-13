@@ -1,54 +1,50 @@
 package com.kwanghwi.lastmessage.auth.service;
 
+import com.kwanghwi.lastmessage.auth.dto.MeResponse;
 import com.kwanghwi.lastmessage.auth.dto.TokenResponse;
-import com.kwanghwi.lastmessage.auth.redis.OtpRedisRepository;
-import com.kwanghwi.lastmessage.common.exception.InvalidOtpException;
+import com.kwanghwi.lastmessage.auth.kakao.KakaoOAuthClient;
+import com.kwanghwi.lastmessage.common.exception.KakaoAuthException;
 import com.kwanghwi.lastmessage.common.security.JwtProvider;
 import com.kwanghwi.lastmessage.user.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import java.security.SecureRandom;
 
 @Service
 public class AuthService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
-    private static final SecureRandom RANDOM = new SecureRandom();
-
-    private final OtpRedisRepository otpRedisRepository;
+    private final KakaoOAuthClient kakaoOAuthClient;
     private final UserService userService;
     private final JwtProvider jwtProvider;
+    private final String kakaoRedirectUri;
 
     public AuthService(
-            OtpRedisRepository otpRedisRepository,
+            KakaoOAuthClient kakaoOAuthClient,
             UserService userService,
-            JwtProvider jwtProvider
+            JwtProvider jwtProvider,
+            @Value("${app.kakao.redirect-uri}") String kakaoRedirectUri
     ) {
-        this.otpRedisRepository = otpRedisRepository;
+        this.kakaoOAuthClient = kakaoOAuthClient;
         this.userService = userService;
         this.jwtProvider = jwtProvider;
+        this.kakaoRedirectUri = kakaoRedirectUri;
     }
 
-    public Mono<Void> sendOtp(String phone) {
-        String code = generateCode();
-        return otpRedisRepository.save(phone, code)
-                .doOnSuccess(ignored -> log.info("[SMS stub] OTP for {}: {}", phone, code))
-                .then();
+    public Mono<TokenResponse> loginWithKakao(String code, String redirectUri) {
+        if (!kakaoRedirectUri.equals(redirectUri)) {
+            return Mono.error(new KakaoAuthException());
+        }
+
+        return kakaoOAuthClient.getKakaoId(code, redirectUri)
+                .flatMap(userService::findOrCreateByKakaoId)
+                .map(user -> new TokenResponse(jwtProvider.createToken(user.getId())));
     }
 
-    public Mono<TokenResponse> verifyOtp(String phone, String code) {
-        return otpRedisRepository.find(phone)
-                .filter(savedCode -> savedCode.equals(code))
-                .switchIfEmpty(Mono.error(new InvalidOtpException()))
-                .flatMap(savedCode -> otpRedisRepository.delete(phone)
-                        .then(userService.findOrCreate(phone)))
-                .map(user -> new TokenResponse(jwtProvider.createToken(user.getPhone())));
+    public Mono<MeResponse> getMe(Long userId) {
+        return userService.findById(userId).map(MeResponse::from);
     }
 
-    private String generateCode() {
-        return String.format("%06d", RANDOM.nextInt(1_000_000));
+    public Mono<MeResponse> registerPhone(Long userId, String phone) {
+        return userService.registerPhone(userId, phone).map(MeResponse::from);
     }
 }

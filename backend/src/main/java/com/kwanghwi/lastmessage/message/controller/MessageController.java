@@ -26,19 +26,19 @@ public class MessageController {
 
     @PostMapping
     public Mono<CreateMessageResponse> createMessage(@Valid @RequestBody CreateMessageRequest request) {
-        return AuthContext.currentPhone()
-                .flatMap(senderPhone -> messageService.createMessage(senderPhone, request));
+        return AuthContext.currentUserId()
+                .flatMap(userId -> messageService.createMessage(userId, request));
     }
 
     @GetMapping
     public Flux<GetMessageResponse> getMyMessages() {
-        return AuthContext.currentPhone()
+        return AuthContext.currentUserId()
                 .flatMapMany(messageService::getMyMessages);
     }
 
     @PatchMapping("/{messageId}/open")
     public Mono<GetMessageResponse> openMessage(@PathVariable Long messageId) {
-        return AuthContext.currentPhone()
-                .flatMap(receiverPhone -> messageService.openMessage(messageId, receiverPhone));
+        return AuthContext.currentUserId()
+                .flatMap(userId -> messageService.openMessage(messageId, userId));
     }
 }

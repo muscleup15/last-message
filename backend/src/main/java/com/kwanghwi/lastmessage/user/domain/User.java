@@ -19,15 +19,25 @@ public class User {
     @Id
     private Long id;
 
+    private Long kakaoId;
+
     private String phone;
 
     private Integer remainingMessageCount;
 
-    public static User create(String phone) {
+    public static User createFromKakao(Long kakaoId) {
         return User.builder()
-                .phone(phone)
+                .kakaoId(kakaoId)
                 .remainingMessageCount(INITIAL_REMAINING_MESSAGE_COUNT)
                 .build();
+    }
+
+    public boolean hasPhone() {
+        return phone != null && !phone.isBlank();
+    }
+
+    public void registerPhone(String phone) {
+        this.phone = phone;
     }
 
     public void decreaseRemainingCount() {

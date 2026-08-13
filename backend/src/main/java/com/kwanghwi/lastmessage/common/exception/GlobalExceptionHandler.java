@@ -44,4 +44,28 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(KakaoAuthException.class)
+    public ResponseEntity<ErrorResponse> handleKakaoAuth(KakaoAuthException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("KAKAO_AUTH_FAILED", e.getMessage()));
+    }
+
+    @ExceptionHandler(PhoneNotRegisteredException.class)
+    public ResponseEntity<ErrorResponse> handlePhoneNotRegistered(PhoneNotRegisteredException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse("PHONE_NOT_REGISTERED", e.getMessage()));
+    }
+
+    @ExceptionHandler(PhoneAlreadyRegisteredException.class)
+    public ResponseEntity<ErrorResponse> handlePhoneAlreadyRegistered(PhoneAlreadyRegisteredException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("PHONE_ALREADY_REGISTERED", e.getMessage()));
+    }
+
+    @ExceptionHandler(PhoneAlreadyInUseException.class)
+    public ResponseEntity<ErrorResponse> handlePhoneAlreadyInUse(PhoneAlreadyInUseException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("PHONE_ALREADY_IN_USE", e.getMessage()));
+    }
 }
