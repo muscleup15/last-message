@@ -18,11 +18,10 @@ public class KakaoOAuthClient {
     private final String clientSecret;
 
     public KakaoOAuthClient(
-            WebClient.Builder webClientBuilder,
             @Value("${app.kakao.client-id}") String clientId,
             @Value("${app.kakao.client-secret:}") String clientSecret
     ) {
-        this.webClient = webClientBuilder.build();
+        this.webClient = WebClient.create();
         this.clientId = clientId;
         this.clientSecret = clientSecret;
     }
