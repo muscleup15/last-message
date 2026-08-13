@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { loginWithKakao } from '../api/auth'
 import { toApiError } from '../api/errors'
+import { HomeStage } from '../components/home/HomeStage'
 import { InlineError } from '../components/feedback/InlineError'
 import { Button } from '../components/ui/Button'
 import { setAccessToken } from '../utils/authToken'
@@ -40,27 +41,31 @@ export function KakaoCallbackPage() {
     }
   }, [navigate, searchParams])
 
-  return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center px-[var(--space-page)]">
-      <div className="flex w-full max-w-[18rem] flex-col items-center text-center">
-        {error ? (
-          <>
+  if (error) {
+    return (
+      <HomeStage
+        actions={
+          <div className="flex w-full flex-col gap-4">
             <InlineError message={error} />
-            <div className="mt-6 w-full">
-              <Button type="button" variant="primary" onClick={() => navigate('/', { replace: true })}>
-                처음으로
-              </Button>
-            </div>
-          </>
-        ) : (
-          <p
-            className="m-0 text-[var(--text-muted)]"
-            style={{ fontSize: 'var(--font-size-caption)' }}
-          >
-            카카오 로그인 중…
-          </p>
-        )}
-      </div>
-    </div>
+            <Button type="button" variant="primary" onClick={() => navigate('/', { replace: true })}>
+              처음으로
+            </Button>
+          </div>
+        }
+      />
+    )
+  }
+
+  return (
+    <HomeStage
+      actions={
+        <p
+          className="m-0 text-center text-[var(--text-muted)]"
+          style={{ fontSize: 'var(--font-size-caption)' }}
+        >
+          카카오 로그인 중…
+        </p>
+      }
+    />
   )
 }
