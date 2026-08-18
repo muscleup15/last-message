@@ -19,6 +19,7 @@ import java.util.Set;
 public class JwtAuthenticationFilter implements WebFilter {
 
     private static final Set<String> PUBLIC_PATHS = Set.of(
+            "/health",
             "/hello",
             "/auth/kakao"
     );
