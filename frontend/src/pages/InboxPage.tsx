@@ -1,23 +1,20 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMessagesByReceiverPhone, openMessage } from '../api/messages'
+import { getMyMessages, openMessage } from '../api/messages'
 import { toApiError } from '../api/errors'
 import { EmptyState } from '../components/feedback/EmptyState'
 import { InlineError } from '../components/feedback/InlineError'
 import { MessageBody } from '../components/message/MessageBody'
 import { MessageList } from '../components/message/MessageList'
-import { Button } from '../components/ui/Button'
 import { Sheet } from '../components/ui/Sheet'
-import { TextField } from '../components/ui/TextField'
 import type { MessageItem } from '../types/message'
-import { digitsOnly, isPhone11 } from '../utils/phone'
+import { hasAccessToken } from '../utils/authToken'
 
-type ViewState = 'idle' | 'loading' | 'empty' | 'list' | 'error'
+type ViewState = 'loading' | 'empty' | 'list' | 'error' | 'unauthenticated'
 
 export function InboxPage() {
   const navigate = useNavigate()
-  const [receiverPhone, setReceiverPhone] = useState('')
-  const [viewState, setViewState] = useState<ViewState>('idle')
+  const [viewState, setViewState] = useState<ViewState>('loading')
   const [messages, setMessages] = useState<MessageItem[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [openingId, setOpeningId] = useState<number | null>(null)
@@ -29,35 +26,42 @@ export function InboxPage() {
     [messages, selectedId],
   )
 
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      if (!hasAccessToken()) {
+        setViewState('unauthenticated')
+        setError('전화번호 인증 후 이용할 수 있습니다.')
+        return
+      }
+
+      setViewState('loading')
+      setError(null)
+      setOpenError(null)
+      setSelectedId(null)
+
+      try {
+        const nextMessages = await getMyMessages()
+        if (cancelled) return
+        setMessages(nextMessages)
+        setViewState(nextMessages.length > 0 ? 'list' : 'empty')
+      } catch (err) {
+        if (cancelled) return
+        setMessages([])
+        setError(toApiError(err).message)
+        setViewState('error')
+      }
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   function handleClose() {
     navigate('/')
-  }
-
-  async function handleLookup(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (viewState === 'loading' || openingId !== null) return
-
-    if (!isPhone11(receiverPhone)) {
-      setError('전화번호는 숫자 11자리여야 합니다.')
-      setViewState('idle')
-      return
-    }
-
-    setError(null)
-    setOpenError(null)
-    setSelectedId(null)
-    setOpeningId(null)
-    setViewState('loading')
-
-    try {
-      const nextMessages = await getMessagesByReceiverPhone(receiverPhone)
-      setMessages(nextMessages)
-      setViewState(nextMessages.length > 0 ? 'list' : 'empty')
-    } catch (err) {
-      setMessages([])
-      setError(toApiError(err).message)
-      setViewState('error')
-    }
   }
 
   async function handleSelect(messageId: number) {
@@ -107,43 +111,15 @@ export function InboxPage() {
           >
             별 받기
           </h1>
-          <p
-            className="mt-2 m-0 text-[var(--text-muted)]"
-            style={{
-              fontSize: 'var(--font-size-caption)',
-              lineHeight: 'var(--line-height-body)',
-            }}
-          >
-            내 번호로 도착한 메시지를 열어보세요.
-          </p>
         </header>
 
-        <form className="flex flex-col gap-6" onSubmit={handleLookup} noValidate>
-          <TextField
-            name="receiverPhone"
-            label="내 전화번호"
-            placeholder="01012345678"
-            inputMode="numeric"
-            autoComplete="tel-national"
-            maxLength={11}
-            value={receiverPhone}
-            onChange={(event) => {
-              setReceiverPhone(digitsOnly(event.target.value, 11))
-              setError(null)
-            }}
-            hint="숫자 11자리"
-          />
-          {error && viewState !== 'list' ? <InlineError message={error} /> : null}
-          <Button type="submit" variant="primary" disabled={viewState === 'loading'}>
-            {viewState === 'loading' ? '조회 중…' : '조회'}
-          </Button>
-        </form>
+        {error ? <InlineError message={error} /> : null}
 
         <section className="mt-8 flex flex-col" aria-live="polite">
-          {viewState === 'idle' ? (
+          {viewState === 'unauthenticated' ? (
             <EmptyState
               className="py-8"
-              message="받은 메시지를 확인하려면 번호를 입력하세요"
+              message="전화번호 인증 후 받은 별을 확인할 수 있습니다"
             />
           ) : null}
 

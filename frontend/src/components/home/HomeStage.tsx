@@ -17,15 +17,13 @@ export function HomeStage({ actions }: HomeStageProps) {
           <p
             className="mt-3 text-[var(--text-muted)]"
             style={{
-              maxWidth: '12.5rem',
               fontSize: 'var(--font-size-caption)',
               lineHeight: 1.7,
+              whiteSpace: 'nowrap',
               animation: 'brand-rise var(--duration-enter) var(--ease-out-soft) 220ms both',
             }}
           >
-            시간이 지나도
-            <br />
-            닿는 마음
+            시간이 지나도 닿는 마음
           </p>
 
           <div

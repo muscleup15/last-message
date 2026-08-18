@@ -26,7 +26,7 @@ export function TextArea({
       <textarea
         id={fieldId}
         className={[
-          'w-full min-h-[8.5rem] resize-y bg-transparent px-0 py-2',
+          'w-full min-h-[8.5rem] resize-none bg-transparent px-0 py-2',
           'border-0 border-b border-[var(--border)] rounded-none',
           'text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50',
           'outline-none transition-colors duration-200',
